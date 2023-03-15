@@ -54,7 +54,7 @@ ps if you are running in jupyter add `!`  before the following commands
 
 
 ---
-## Interesing Takeouts
+## my AHA moments
 1. **Strided Matrices:**
 
     In basic programming classes when we got to deal with 2D matrices we hear about column major matrices representation such as `matlab`      and row major representations such as in `C++`. Choosing which representation can have great performance on your program. You can check [this stack to learn more about it](https://scicomp.stackexchange.com/questions/4796/row-major-versus-column-major-layout-of-matrices). 
