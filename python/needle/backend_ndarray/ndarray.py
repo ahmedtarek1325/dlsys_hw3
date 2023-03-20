@@ -241,7 +241,10 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # raise the error as requested
+        assert prod(new_shape) == prod(self._shape) , "elements of newshape != the orignal shape"
+        assert self.is_compact() , "array is not compact"
+        return NDArray.make(shape=new_shape, device=self._device, handle=self._handle)
         ### END YOUR SOLUTION
 
     def permute(self, new_axes):
@@ -264,7 +267,16 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        new_shape,new_strides= [], []
+        for v in new_axes: 
+            new_shape.append(self._shape[v])
+            new_strides.append(self._strides[v])
+        
+        return NDArray.make(shape=tuple(new_shape),
+                            strides=tuple(new_strides),
+                            device=self._device,
+                            handle=self._handle,
+                            offset=self._offset)
         ### END YOUR SOLUTION
 
     def broadcast_to(self, new_shape):
@@ -285,7 +297,27 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        strides = list(self._strides)
+
+        for i,_ in enumerate(self._shape): 
+            if self._shape[i] != 1 : 
+                assert new_shape[i] == self._shape[i] , "new_shape[i] != shape[i] and shape[i] !=1"
+            else: 
+                strides[i]=0 # which means we will b repeating on this dim
+        
+        num = len(new_shape)-len(self._shape)
+        strides = tuple(
+                [
+                    strides.append(0)
+                    for i in range(num)
+                ]
+            ) if num else tuple(strides)
+        
+        return NDArray.make(shape=new_shape,
+                            strides=strides,
+                            device=self._device,
+                            handle=self._handle,
+                            offset=self._offset)
         ### END YOUR SOLUTION
 
     ### Get and set elements
@@ -319,7 +351,9 @@ class NDArray:
         entries, so for simplicity we wrote the code for you to convert these
         to always be a tuple of slices, one of each dimension.
         For this tuple of slices, return an array that subsets the desired
-        elements.  As before, this can be done entirely through compute a new
+        elements.  
+        
+        As before, this can be done entirely through compute a new
         shape, stride, and offset for the new "view" into the original array,
         pointing to the same memory
         Raises:
@@ -348,7 +382,21 @@ class NDArray:
         assert len(idxs) == self.ndim, "Need indexes equal to number of dimensions"
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        #new_shape = [ (i.stop-i.start)//i.step for i in idxs]
+        new_shape = [len(range(i.start,i.stop,i.step)) for i in idxs]
+        new_shape = tuple(
+            [ v if v else 1 for v in new_shape]
+        )
+        offset= [v.start*self.strides[i] for i,v in enumerate(idxs)]
+        offset = sum(offset)
+
+        strides= tuple([v*idxs[i].step for i,v in enumerate(self._strides)])
+     
+        return NDArray.make(shape=new_shape,
+                            strides=strides,
+                            device=self._device,
+                            handle=self._handle,
+                            offset=offset)
         ### END YOUR SOLUTION
 
     def __setitem__(self, idxs, other):
